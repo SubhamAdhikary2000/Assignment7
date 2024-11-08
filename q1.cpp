@@ -1,83 +1,70 @@
 #include <iostream>
-using namespace std;
 
-struct X {
-    int i;
-
-    // Constructor to initialize X with an integer
-    X(int n) : i(n) {}
-
-    // Overload + operator to add int to X and return a new X
-    X operator+(int n) {
-        return X(n + i);
-    }
+struct X{
+   int i;
+   X(int a): i {a} {};
+   X operator+(int);
 };
 
-struct Y {
-    int i;
-
-    // Overload + operator to add an X object to Y and return a new Y
-    Y operator+(X x) {
-        Y y;
-        y.i = x.i + i;
-        return y;
-    }
-
-    // Conversion operator to convert Y to int by returning the value of i
-    operator int() {
-        return i;
-    }
+struct Y{
+   int i;
+   Y(X x){i = x.i;};
+   Y operator+(X);
+   operator int(){ return i; };
 };
 
-// Overload << operator for outputting X to ostream
-ostream& operator<<(ostream& os, X x) {
-    os << x.i;
-    return os;
+extern X operator*(X, Y);
+extern int f(X);
+
+X X::operator+(int i){
+   return X(i+this->i);
 }
 
-// Overload * operator for multiplying an X and a Y and returning a new X
-extern X operator*(X x, Y y) {
-    return X(x.i * y.i);
+Y Y::operator+(X x){
+   Y y(X(this->i + x.i));
+   return y;
 }
 
-// External function that takes an X and returns its integer value
-extern int f(X x) {
-    return x.i;
+X operator*(X x, Y y){
+   return X(x.i * y.i);		
 }
 
-// Global variable initialization
-X x = 1;          // Creates an X object with i = 1
-Y y = y + x;      // Calls Y::operator+ with y (default initialized) and x, assigning to y
-int i = 2;        // Initializes an int with value 2
+int f(X x)
+{
+   return x.i;
+}
+std::ostream& operator<<(std::ostream& os, X x)
+{
+	os << x.i << std::endl;
+	return os;
+}
 
-int main() {
-    // Output the result of i + 10, a simple integer addition
-    cout << "i + 10 = " << i + 10 << endl;
+std::ostream& operator<<(std::ostream& os, Y y)
+{
+	os << y.i << std::endl;
+	return os;
+}
 
-    // Output the result of y + X(10), where y is added to an X object with i = 10
-    cout << "y + 10 = " << y + X(10) << endl;
+X x = 1;
+Y y = x;
+int i = 2;
 
-    // Output the result of y + (X(10) * y), which multiplies X(10) and y, then adds to y
-    cout << "y + 10 * y = " << y + X(10) * y << endl;
+int main()
+{
+   std::cout << "i + 10 = " << i + 10 << std::endl; // no conversion used
+   std::cout << "y + 10 = " <<  int(y) + 10 << std::endl; // y is converted to int
+   std::cout << "y + 10 * y = " <<  y + X(10)*y << std::endl; // 10 is converted to X, result of
+   							       // y + X*y is converted to Y
 
-    // Output the result of x + y + i, where x and y are added as X, and i is added as int
-    cout << "x + y + i = " << x + y + i << endl;
-
-    // Output the result of f(x) * f(x) + i, where f(x) returns the int i of X
-    cout << "x + x + i = " << f(x) * f(x) + i << endl;
-
-    // Output the result of f(7), where 7 is implicitly converted to X via constructor
-    cout << "f(7) = " << f(7) << endl;
-
-    // Output the result of f(y), where y is converted to int, then to X for f
-    cout << "f(y) = " << f(int(y)) << endl;
-
-    // Output the result of y + y, which uses Y's overloaded + operator
-    cout << "y + y = " << y + y << endl;
-
-    // Output the result of 106 + int(y), converting y to int and adding to 106
-    cout << "106 + y = " << 106 + int(y) << endl;
-
-    return 0;
+   std::cout << "x + y + i = " << x + y + i << std::endl; // y converted to int, result of x + y 								   // converted to X, result of x+y+i     								   // converted to X
+   std::cout << "x * x + i = " << x * y + i << std::endl;
+   /* the second x from left is converted into Y, the result of x * x is converted into X, and 
+    * the final result is converted into X */
+   std::cout << "f(7) = " << f(7) << std::endl; // 7 is converted into X in call to f(7).
+   std::cout << "f(y) = " << f(int(y)) << std::endl; 
+   // y is converted into int, the int is converted into X
+   std::cout << "y + y = " << y + y << std::endl;
+   /* both y's will be converted to int */
+   std::cout << "106 + y = " << 106 + int(y) << std::endl; // the y is converted to int
 }
 
